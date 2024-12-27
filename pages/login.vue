@@ -39,10 +39,19 @@ export default {
   methods: {
     handleLogin() {
       if (!this.loginForm.username || !this.loginForm.password) {
-        alert('请填写完整信息')
-        return
+        alert('请填写完整信息');
+        return;
       }
-      console.log('登录:', this.loginForm)
+      // 模拟登录验证
+      const isValidLogin = this.loginForm.username === '123' && this.loginForm.password === '123';
+      
+      if (isValidLogin) {
+        // 登录成功，跳转到主页
+        this.$router.push('/home'); // 跳转到根路径，即主页
+      } else {
+        // 登录失败，提示用户
+        alert('用户名或密码错误');
+      }
     }
   }
 }
