@@ -26,6 +26,10 @@
 </template>
 
 <script>
+import axios from "axios";
+
+const apiBase = useRuntimeConfig().public.apiBase
+
 export default {
   name: 'Login',
   data() {
@@ -43,15 +47,20 @@ export default {
         return;
       }
       // 模拟登录验证
-      const isValidLogin = this.loginForm.username === '123' && this.loginForm.password === '123';
-      
-      if (isValidLogin) {
+      // const isValidLogin = this.loginForm.username === '123' && this.loginForm.password === '123';
+      axios.post(`${apiBase}/user/login`,{
+        username: this.loginForm.username,
+        password: this.loginForm.password
+      })
+      .then(response => {
         // 登录成功，跳转到主页
+        alert('登录成功');
         this.$router.push('/home'); // 跳转到根路径，即主页
-      } else {
-        // 登录失败，提示用户
-        alert('用户名或密码错误');
-      }
+      })
+      .catch(error => {
+        console.error('登录失败:',error);
+        alert('登录失败');
+      })
     }
   }
 }

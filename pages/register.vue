@@ -38,6 +38,10 @@
 </template>
 
 <script>
+import axios  from "axios";
+
+const apiBase = useRuntimeConfig().public.apiBase
+
 export default {
   name: 'Register',
   data() {
@@ -70,7 +74,23 @@ export default {
         alert('请填写完整信息')
         return
       }
-      console.log('注册:', this.registerForm)
+
+      // 调用后端注册 API
+      axios.post(`${apiBase}/user/register`, {
+        // phone: this.registerForm.phone,
+        username: this.registerForm.username,
+        password: this.registerForm.password
+      })
+      .then(response => {
+        // 注册成功后的逻辑
+        alert('注册成功');
+        this.$router.push('/login');  // 注册成功后跳转到登录页面
+      })
+      .catch (error => {
+        // 处理错误
+        console.error('注册失败:', error);
+        alert('注册失败，请稍后再试');
+      });
     }
   }
 }
