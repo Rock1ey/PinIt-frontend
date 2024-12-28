@@ -75,7 +75,7 @@ const switchTab = (tab) => {
 }
 
 .nav-item span {
-  font-size: 16px; /* 增加文字大小 */
+  font-size: 20px; /* 增加文字大小 */
 }
 
 .nav-item.active {
