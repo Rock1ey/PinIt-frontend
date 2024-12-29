@@ -27,8 +27,12 @@
 
 <script>
 import axios from "axios";
+import {useState} from "#app";
 
 const apiBase = useRuntimeConfig().public.apiBase
+
+// 初始化状态
+const user = useState('user', () => null); // 默认设置为 null
 
 export default {
   name: 'Login',
@@ -53,6 +57,8 @@ export default {
         password: this.loginForm.password
       })
       .then(response => {
+        // 登录成功后，保存用户信息到状态
+        user.value = response.data; // 使用 `user` 来存储返回的用户信息
         // 登录成功，跳转到主页
         alert('登录成功');
         this.$router.push('/home'); // 跳转到根路径，即主页

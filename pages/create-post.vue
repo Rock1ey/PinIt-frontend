@@ -29,9 +29,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useState } from "#app";
 import axios from 'axios';
 
 const apiBase = useRuntimeConfig().public.apiBase
+const user = useState('user');
 
 const postForm = ref({
   title: '',
@@ -47,6 +49,7 @@ const router = useRouter();
 onMounted(() => {
   const { lat, lng } = route.query;
   console.log('发布帖子页面的坐标:', lat, lng);
+  console.log('用户ID：' + user.value.id)
   postForm.value.latitude = lat;
   postForm.value.longitude = lng;
 });
@@ -60,7 +63,7 @@ const handlePostSubmit = async () => {
   const formData = new FormData();
   formData.append('title', postForm.value.title);
   formData.append('description', postForm.value.description);
-  formData.append('userId', '1'); // 用户 ID 暂时设为 1
+  formData.append('userId', user.value.id);
   formData.append('latitude', postForm.value.latitude);
   formData.append('longitude', postForm.value.longitude);
 
