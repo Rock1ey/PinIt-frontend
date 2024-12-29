@@ -23,8 +23,6 @@
         </div>
       </div>
 
-      
-
 
       <div class="settings">
         <div class="setting-item" @click="editProfile">
@@ -35,6 +33,20 @@
           <i class="fas fa-sign-out-alt"></i>
           <span>退出登录</span>
         </div>
+      </div>
+
+      <div v-if="isEditing" class="edit-form">
+        <h3>编辑资料</h3>
+        <form @submit.prevent="handleSaveChanges">
+          <label for="username">用户名</label>
+          <input type="text" v-model="userInfo.username" id="username" required />
+
+          <label for="bio">简介</label>
+          <textarea v-model="userInfo.bio" id="bio" required></textarea>
+
+          <button type="submit">保存</button>
+          <button type="button" @click="cancelEdit">取消</button>
+        </form>
       </div>
 
       <div class="my-posts">
@@ -53,13 +65,19 @@
 import { ref } from 'vue';
 import TopNavBar from '../components/TopNavBar.vue';
 import { useRouter } from 'vue-router';
+import { useState } from "#app";
+import axios from 'axios';
 
+const apiBase = useRuntimeConfig().public.apiBase
 const router = useRouter();
+const user = useState('user');
+
+const isEditing = ref(false);
 
 const userInfo = ref({
-  username: '用户名',
-  avatar: '/logo.jpg', // 假设 logo.jpg 在 public 文件夹下
-  bio: '这是个人简介',
+  username: user.value.username,
+  avatar: user.value?.avatar || '/logo.jpg', // 假设 logo.jpg 在 public 文件夹下
+  bio: user.value?.bio || '这个人很懒，什么都没有写',
   postContents:[
     { id: 1, title: '示例帖子1', description: '这是第一个帖子的描述', location: '北京市', image: 'https://example.com/image1.jpg' },
     { id: 2, title: '示例帖子2', description: '这是第二个帖子的描述', location: '上海市', image: 'https://example.com/image2.jpg' }
@@ -72,20 +90,18 @@ const handleAvatarUpload = async (event) => {
   const file = event.target.files[0];
   if (file) {
     const formData = new FormData();
+    formData.append('id',user.value.id)
     formData.append('avatar', file);
 
     try {
-      const response = await fetch('/api/upload-avatar', {
-        method: 'POST',
-        body: formData,
+      const response = await axios.post(`${apiBase}/user/upload-avatar`, formData,{
+        headers:{
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
+        },
       });
-      if (response.ok) {
-        const data = await response.json();
-        userInfo.value.avatar = data.avatarUrl; // 更新用户头像URL
-        alert('头像更新成功');
-      } else {
-        alert('头像更新失败');
-      }
+      userInfo.value.avatar = response.data.avatar; // 更新用户头像URL
+      alert('头像更新成功');
     } catch (error) {
       console.error('头像上传请求失败:', error);
       alert('头像上传失败');
@@ -94,10 +110,44 @@ const handleAvatarUpload = async (event) => {
 };
 
 const editProfile = () => {
-  console.log('编辑资料');
+  isEditing.value = true;
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+  // 恢复为用户当前资料
+  userInfo.value.username = user.value.username;
+  userInfo.value.bio = user.value.bio;
+};
+
+const handleSaveChanges = async () => {
+  const updatedUser = {
+    id: user.value.id,
+    username: userInfo.value.username,
+    bio: userInfo.value.bio,
+  };
+
+  try {
+    const response = await axios.put(`${apiBase}/user/${user.value.id}`, updatedUser, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+    userInfo.value = response.data; // 更新前端显示的用户信息
+    user.value = response.data; // 更新全局用户信息
+    alert('资料更新成功');
+    isEditing.value = false; // 结束编辑
+  } catch (error) {
+    console.error('更新资料失败:', error);
+    alert('资料更新失败');
+  }
 };
 
 const logout = () => {
+  // 清除用户信息
+  user.value = null; // 将状态重置为 null
+  // 跳转到登录页面
   router.push('/login');
 };
 </script>
