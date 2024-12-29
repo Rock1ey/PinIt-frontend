@@ -14,7 +14,7 @@
 
       <div class="stats">
         <div class="stat-item">
-          <span class="number">{{ userInfo.posts }}</span>
+          <span class="number">{{ userInfo.posts.length }}</span>
           <span class="label">发布</span>
         </div>
         <div class="stat-item">
@@ -22,7 +22,6 @@
           <span class="label">收藏</span>
         </div>
       </div>
-
 
       <div class="settings">
         <div class="setting-item" @click="editProfile">
@@ -50,10 +49,21 @@
       </div>
 
       <div class="my-posts">
-        <h3 >我发布的帖子</h3>
-        <div v-for="postContents in userInfo.posts" :key="post.id" class="post-item">
-          <h4>{{ postContents.title }}</h4>
-          <p>{{ postContents.description }}</p>
+        <h3>我发布的帖子</h3>
+        <div v-if="userInfo.posts.length === 0">
+          <p>没有发布任何帖子</p>
+        </div>
+        <div v-for="post in userInfo.posts" :key="post.id" class="post-item">
+          <div class="post-content">
+            <div class="post-text">
+              <h4>{{ post.title }}</h4>
+              <p>{{ post.description }}</p>
+              <!-- <p><strong>位置：</strong>{{ post.location }}</p> -->
+            </div>
+            <div class="post-image">
+              <img v-if="post.imageUrls" :src="post.imageUrls[0]" alt="帖子图片" class="post-image-img" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -62,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import TopNavBar from '../components/TopNavBar.vue';
 import { useRouter } from 'vue-router';
 import { useState } from "#app";
@@ -78,19 +88,31 @@ const userInfo = ref({
   username: user.value.username,
   avatar: user.value?.avatar || '/logo.jpg', // 假设 logo.jpg 在 public 文件夹下
   bio: user.value?.bio || '这个人很懒，什么都没有写',
-  postContents:[
-    { id: 1, title: '示例帖子1', description: '这是第一个帖子的描述', location: '北京市', image: 'https://example.com/image1.jpg' },
-    { id: 2, title: '示例帖子2', description: '这是第二个帖子的描述', location: '上海市', image: 'https://example.com/image2.jpg' }
-  ],
-  posts: 0,
+  posts: [],  // 这里的 posts 是一个空数组，等待后端数据填充
   favorites: 0
+});
+
+// 获取用户发布的所有帖子
+const fetchUserPosts = async () => {
+  try {
+    const userId = user.value.id;  // 假设 user.value.id 存储当前用户的 ID
+    const response = await axios.get(`${apiBase}/posts/user/${userId}`);
+    userInfo.value.posts = response.data;  // 将获取的帖子数据存入 userInfo.posts
+    console.log('用户的帖子:', userInfo.value.posts);
+  } catch (error) {
+    console.error('获取用户帖子失败:', error);
+  }
+};
+
+onMounted(() => {
+  fetchUserPosts();  // 在组件挂载后调用接口获取数据
 });
 
 const handleAvatarUpload = async (event) => {
   const file = event.target.files[0];
   if (file) {
     const formData = new FormData();
-    formData.append('id',user.value.id)
+    formData.append('id',user.value.id);
     formData.append('avatar', file);
 
     try {
@@ -251,12 +273,46 @@ const logout = () => {
 }
 
 .post-item {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   border-bottom: 1px solid #eee;
-  color:black;
+  color: black;
+  padding: 15px;
+}
+
+.post-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;  /* 允许换行 */
+}
+
+.post-text {
+  flex: 1;
+  padding-right: 15px;
+  max-width: 60%;  /* 限制文字的最大宽度 */
+  text-align: left;
+}
+
+.post-image {
+  flex-shrink: 0;
+  max-width: 35%;  /* 图片占据的最大宽度 */
+}
+
+.post-image-img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.post-item h4 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
 }
 
 .post-item p {
   margin: 5px 0;
+  font-size: 14px;
+  color: #666;
 }
 </style>

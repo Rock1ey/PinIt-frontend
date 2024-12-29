@@ -13,11 +13,11 @@
       </div>
 
       <div class="search-results">
-        <div v-for="item in searchResults" :key="item.id" class="result-item">
+        <div v-for="item in searchResults" :key="item.id" class="result-item" @click="goToPostDetail(item.id)">
           <div class="item-content">
             <h3>{{ item.title }}</h3>
             <p>{{ item.description }}</p>
-            <span class="location">{{ item.location }}</span>
+<!--            <span class="location">{{ item.location }}</span>-->
           </div>
         </div>
       </div>
@@ -28,13 +28,31 @@
 <script setup>
 import TopNavBar from '../components/TopNavBar.vue';
 import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
+const apiBase = useRuntimeConfig().public.apiBase
 const searchQuery = ref('');
 const searchResults = ref([]);
+const router = useRouter();
 
-const handleSearch = () => {
-  // 搜索逻辑
-  console.log('搜索:', searchQuery.value);
+const handleSearch = async () => {
+  if (searchQuery.value.trim()) {
+    try {
+      // 发起搜索请求
+      const response = await axios.get(`${apiBase}/posts/search?title=${searchQuery.value}`);
+      searchResults.value = response.data; // 假设后端返回的是一个包含帖子信息的数组
+    } catch (error) {
+      console.error('搜索请求失败:', error);
+    }
+  } else {
+    searchResults.value = []; // 如果搜索框为空，清空结果
+  }
+};
+
+const goToPostDetail = (postId) => {
+  // 跳转到帖子详情页面
+  router.push({ name: 'post-detail', query: { id: postId } });
 };
 </script>
 
