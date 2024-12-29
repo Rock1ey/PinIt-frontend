@@ -70,16 +70,16 @@ const switchTab = (tab) => {
 }
 
 .nav-item i {
-  font-size: 20px;
+  font-size: 24px; /* 增加图标大小 */
   margin-bottom: 4px;
 }
 
 .nav-item span {
-  font-size: 12px;
+  font-size: 20px; /* 增加文字大小 */
 }
 
 .nav-item.active {
   color: #42b983;
   border-bottom: 2px solid #42b983;
 }
-</style> 
+</style>

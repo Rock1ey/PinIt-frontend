@@ -40,12 +40,14 @@ const handleSearch = () => {
 
 <style scoped>
 .search-page {
+  
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .search-container {
+  background-image: url('../assets/background.png');
   flex: 1;
   padding: 20px;
 }
